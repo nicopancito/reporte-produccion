@@ -1,0 +1,31 @@
+/* Base: colores, tipografía y reglas generales. Modo oscuro automático. */
+:root{
+  --bg:#f2f5fb; --surface:#ffffff; --surface-2:#eef2fb; --line:#dde4f1;
+  --ink:#122347; --muted:#5f6c86;
+  --blue:#3B65FF; --blue-ink:#1f45d6; --turq:#4CDDD8; --navy:#0c2a6b;
+  --ok:#14804a; --ok-bg:#e3f6ec; --warn:#94600a; --warn-bg:#fff3d9; --bad:#b4232c; --bad-bg:#fde8ea; --info-bg:#e7edff;
+  --late:#7a4fd1; --late-bg:#efe8fd;
+  --display:"Sora","Segoe UI",system-ui,sans-serif; --body:"Manrope","Segoe UI",system-ui,sans-serif;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0b1428; --surface:#121e38; --surface-2:#18264a; --line:#26365f;
+  --ink:#e8eefc; --muted:#9aa8c7; --blue:#6f8dff; --blue-ink:#9bb0ff; --navy:#071a45;
+  --ok:#5fd08f; --ok-bg:#12342a; --warn:#f2c260; --warn-bg:#3a2d10; --bad:#ff8a92; --bad-bg:#3d1a22; --info-bg:#1b2a55;
+  --late:#b99bff; --late-bg:#2c2150; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0b1428; --surface:#121e38; --surface-2:#18264a; --line:#26365f;
+  --ink:#e8eefc; --muted:#9aa8c7; --blue:#6f8dff; --blue-ink:#9bb0ff; --navy:#071a45;
+  --ok:#5fd08f; --ok-bg:#12342a; --warn:#f2c260; --warn-bg:#3a2d10; --bad:#ff8a92; --bad-bg:#3d1a22; --info-bg:#1b2a55;
+  --late:#b99bff; --late-bg:#2c2150; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;letter-spacing:-.01em}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{cursor:not-allowed;opacity:.6}
+:focus-visible{outline:3px solid var(--turq);outline-offset:2px}
+[hidden]{display:none!important}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)} .small{font-size:13px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
