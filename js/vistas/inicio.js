@@ -2,7 +2,7 @@
 import { esc, formatoNumero, medida } from "../util/dom.js";
 import { hoyLima, inicioMes, finMes, nombreMes, fechaLarga, fechaCorta, sumarDias } from "../logica/fechas.js";
 import { estadosDelMes, totalesPorMedida } from "../logica/cumplimiento.js";
-import { misReportes, diasNoLaborables, misJustificaciones, miCumplimiento } from "../datos/reportes.js";
+import { misReportes, diasNoLaborables, misJustificaciones, miCumplimiento, mesesCerrados } from "../datos/reportes.js";
 import { DIAS_ATRASO_MAX } from "../config.js";
 
 const LEYENDA = [["r", "c-ok", "Reportado"], ["l", "c-late", "Registrado tarde"], ["f", "c-bad", "Falta"], ["j", "c-info", "Justificado"], ["h", "c-mute", "Feriado o evento"]];
@@ -10,8 +10,8 @@ const LEYENDA = [["r", "c-ok", "Reportado"], ["l", "c-late", "Registrado tarde"]
 export async function vistaInicio(perfil) {
   if (!perfil.reporta_produccion) {
     return `<div class="head"><div><div class="eyebrow">Bienvenido</div><h1>Hola, ${esc(nombreCorto(perfil.nombre))}</h1>
-      <p>Tu cuenta es de consulta. El panel con la producción de todos llega en la etapa 3.</p></div></div>`;
-  }
+      <p>Tu cuenta es de consulta. La producción de todos está en <a href="#panel">Panel</a>.</p></div></div>`;
+    }
   const hoy = hoyLima(), desde = inicioMes(hoy), hasta = finMes(hoy);
   const [reportes, libres, justif, cumpl] = await Promise.all([
     misReportes(perfil.id, desde, hasta), diasNoLaborables(desde, hasta), misJustificaciones(perfil.id, desde, hasta),
@@ -22,6 +22,7 @@ export async function vistaInicio(perfil) {
   const hechosHoy = reportes.filter((r) => r.fecha === hoy).length;
   const limite = sumarDias(hoy, -DIAS_ATRASO_MAX);
   const faltan = dias.filter((d) => d.estado === "f");
+  const anteriores = await faltanDelMesPasado(perfil, desde, limite);
 
   let hoyHTML;
   if (deHoy.estado === "w" || deHoy.estado === "h") {
@@ -40,9 +41,10 @@ export async function vistaInicio(perfil) {
 
   const recientes = faltan.filter((d) => d.fecha >= limite);
   const vencidos = faltan.filter((d) => d.fecha < limite);
-  const faltanHTML = !faltan.length ? "" : `<div class="miss"><div>Te ${faltan.length === 1 ? "falta 1 día" : `faltan ${faltan.length} días`} este mes
+    const faltanHTML = !faltan.length && !anteriores.length ? "" : `<div class="miss"><div>${faltan.length ? `Te ${faltan.length === 1 ? "falta 1 día" : `faltan ${faltan.length} días`} este mes` : ""}
+      ${anteriores.length ? `<div class="small" style="font-weight:600">Del mes pasado aún puedes registrar: ${anteriores.map((d) => esc(fechaCorta(d.fecha))).join(", ")}</div>` : ""}
       ${vencidos.length ? `<div class="small" style="font-weight:600">${vencidos.map((d) => esc(fechaCorta(d.fecha))).join(", ")}: pasó el plazo de ${DIAS_ATRASO_MAX} días, avisa al supervisor.</div>` : ""}</div>
-    <div class="pend">${recientes.map((d) => `<a class="btn sm ghost" href="#registrar?fecha=${d.fecha}">Registrar ${esc(fechaCorta(d.fecha))}</a>`).join("")}</div></div>`;
+    <div class="pend">${[...anteriores, ...recientes].map((d) => `<a class="btn sm ghost" href="#registrar?fecha=${d.fecha}">Registrar ${esc(fechaCorta(d.fecha))}</a>`).join("")}</div></div>`;
 
   const primerDia = new Date(desde + "T12:00:00Z").getUTCDay() || 7;
   const calHTML = ["L", "M", "M", "J", "V", "S", "D"].map((x) => `<div class="dow">${x}</div>`).join("")
@@ -76,4 +78,16 @@ function nombreCorto(n) {
   const p = String(n || "").split(/\s+/).filter((x) => !["DE", "LA", "DEL", "LOS", "LAS", "Y"].includes(x));
   const cap = (s) => (s ? s[0] + s.slice(1).toLowerCase() : "");
   return p.length >= 3 ? `${cap(p[2])} ${cap(p[0])}` : cap(n);
+}
+
+
+// Los primeros días del mes, los días que faltaron del mes anterior siguen dentro del plazo de atraso.
+async function faltanDelMesPasado(perfil, desde, limite) {
+  if (limite >= desde) return [];
+  const dAnt = inicioMes(limite), hAnt = sumarDias(desde, -1);
+  const [reportes, libres, justif, cerrados] = await Promise.all([
+    misReportes(perfil.id, dAnt, hAnt), diasNoLaborables(dAnt, hAnt), misJustificaciones(perfil.id, dAnt, hAnt), mesesCerrados(),
+  ]);
+  if (cerrados.includes(dAnt)) return [];
+  return estadosDelMes(limite, reportes, libres, justif).filter((d) => d.estado === "f" && d.fecha >= limite);
 }
