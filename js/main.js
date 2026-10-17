@@ -63,7 +63,7 @@ async function navegar() {
   const destino = ruta === "corregir" && puedeCorregir ? "corregir" : permitidas.includes(ruta) ? ruta : "inicio";
   document.querySelectorAll(".nav a").forEach((a) => a.classList.toggle("on", a.dataset.ruta === (destino === "corregir" ? (perfil.rol === "supervisor" ? "revisar" : "mis-reportes") : destino)));
   const vista = $("#vista");
-  vista.innerHTML = `<div class="cargando-vista">Cargando…</div>`;
+  vista.innerHTML = `<div class="cargando-vista pagina">Cargando…</div>`;
   try {
     if (destino === "inicio") vista.innerHTML = await vistaInicio(perfil);
     else if (destino === "registrar") { vista.innerHTML = await vistaRegistrar(perfil, params); montarRegistrar(); }

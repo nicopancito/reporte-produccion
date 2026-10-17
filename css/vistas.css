@@ -1,6 +1,6 @@
 /* Estructura de la app y estilos propios de cada pantalla. */
 .app{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:100vh}
-.side{background:var(--surface);border-right:1px solid var(--line);padding:20px 14px;display:flex;flex-direction:column;gap:18px;position:sticky;top:0;height:100vh}
+.side{background:var(--surface);border-right:1px solid var(--line);padding:20px 14px;display:flex;flex-direction:column;gap:18px;position:sticky;top:0;height:100vh;overflow-y:auto;overscroll-behavior:contain}
 .side .logo{background:#fff;border-radius:12px;padding:10px 12px;border:1px solid var(--line)}
 .side .logo img{display:block;width:100%;height:auto}
 .who{display:flex;gap:10px;align-items:center;padding:10px;border-radius:12px;background:var(--surface-2)}
@@ -73,7 +73,7 @@
 
 @media (max-width:860px){
   .app{grid-template-columns:1fr}
-  .side{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;z-index:15;flex-direction:row;border-right:0;border-top:1px solid var(--line);padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));gap:0}
+.side{background:var(--surface);border-right:1px solid var(--line);padding:20px 14px;display:flex;flex-direction:column;gap:18px;position:sticky;top:0;height:100vh;overflow-y:auto;overscroll-behavior:contain}
   .side .logo,.side .who,.navlabel,.sidefoot{display:none}
   .nav{display:flex;width:100%;overflow-x:auto;gap:2px}
   .nav a{flex:1 0 auto;flex-direction:column;gap:3px;font-size:11px;padding:7px 8px;min-width:66px;align-items:center}
