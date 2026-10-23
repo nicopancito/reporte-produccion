@@ -1,7 +1,7 @@
 // Reportes de producción: lectura y envío. Las reglas viven en la base (registrar_reporte, corregir_reporte).
 import { sb, revisar } from "./cliente.js";
 
-const COLUMNAS = "*, perfil:perfiles(nombre), procedimiento:procedimientos(id, nombre, unidad_medida, formulario, metrica, proceso:procesos(id, nombre, color, icono)), detalles:reporte_detalles(*)";
+const COLUMNAS = "*, perfil:perfiles!perfil_id(nombre), procedimiento:procedimientos(id, nombre, unidad_medida, formulario, metrica, proceso:procesos(id, nombre, color, icono)), detalles:reporte_detalles(*)";
 
 export async function misReportes(perfilId, desde, hasta) {
   const datos = revisar(

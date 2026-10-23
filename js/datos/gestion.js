@@ -1,7 +1,7 @@
 // Datos para supervisor, administrador y programador (ven a todos; la base decide quién puede cambiar qué).
 import { sb, revisar } from "./cliente.js";
 
-const COLUMNAS = "*, perfil:perfiles(id, nombre, archivo), procedimiento:procedimientos(id, nombre, unidad_medida, formulario, metrica, proceso:procesos(id, nombre, color, icono)), detalles:reporte_detalles(*)";
+const COLUMNAS = "*, perfil:perfiles!perfil_id(id, nombre, archivo), procedimiento:procedimientos(id, nombre, unidad_medida, formulario, metrica, proceso:procesos(id, nombre, color, icono)), detalles:reporte_detalles(*)";
 
 // Todos los reportes de un rango, en páginas de 1000.
 export async function reportesDeTodos(desde, hasta, { perfilId, estado } = {}) {
