@@ -1,4 +1,4 @@
-// Revisar reportes: el supervisor marca Revisado, Observa (con texto) o Corrige. El administrador solo mira.
+// revisar reportes del supervisor mientras que el administrador solo mira
 import { $, esc, avisar, mensajeError } from "../util/dom.js";
 import { hoyLima, finMes, nombreMes } from "../logica/fechas.js";
 import { reportesDeTodos, perfilesQueReportan, revisarReporte, cierre } from "../datos/gestion.js";
@@ -7,7 +7,8 @@ import { tarjetaReporte, activarDetalles, cap } from "./tarjeta-reporte.js";
 import { nombreCorto } from "./panel.js";
 
 let perfil, filtro, reportes = [], cerrado = false;
-
+const POR_PAGINA = 20; //para que las tarjetas de por revisar no se carguen de porraso y sea una por una
+let mostrar = POR_PAGINA;
 export async function vistaRevisar(p, params) {
   perfil = p;
   const supervisor = p.rol === "supervisor";
@@ -51,6 +52,7 @@ async function cargar() {
   ]);
   reportes = filtro.proceso ? datos.filter((r) => String(r.procedimiento.proceso.id) === filtro.proceso) : datos;
   cerrado = !!c;
+  mostrar = POR_PAGINA; // reiniciar la cantidad de reportes a mostrar cada vez que se carga
   pintar();
 }
 
@@ -70,7 +72,7 @@ function pintar() {
   $("#resumen").innerHTML = (cerrado ? `<div class="aviso">El mes de ${esc(nombreMes(filtro.mes + "-01"))} está cerrado: no se puede revisar ni corregir.</div>` : "")
     + `<div class="wfoot" style="align-items:center"><span class="muted small">${reportes.length} ${reportes.length === 1 ? "reporte" : "reportes"}${pendientes ? ` · ${pendientes} sin revisar` : ""}</span>
       ${puedeActuar() && pendientes ? `<button type="button" class="btn sm ghost" id="todosRevisados">Marcar los ${pendientes} sin revisar como revisados</button>` : ""}</div>`;
-  lista.innerHTML = reportes.length
+    lista.innerHTML = reportes.length
     ? reportes.map((r) => tarjetaReporte(r, { tecnico: true, acciones: acciones(r) })).join("")
     : `<div class="card vacio">No hay reportes con estos filtros.</div>`;
 }
@@ -78,6 +80,9 @@ function pintar() {
 async function alClic(e) {
   const b = e.target.closest("button");
   if (!b) return;
+  if(b.dataset.verMas !== undefined) {
+    mostrar += POR_PAGINA; return pintar();
+  }
   if (b.dataset.revisado) return cambiar(b, Number(b.dataset.revisado), "revisado");
   if (b.dataset.observar) {
     const item = b.closest(".item");
