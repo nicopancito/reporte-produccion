@@ -1,4 +1,4 @@
-/* Estructura de la app y estilos propios de cada pantalla. */
+/* estilos de ncada pantalla */
 .app{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:100vh}
 .side{background:var(--surface);border-right:1px solid var(--line);padding:20px 14px;display:flex;flex-direction:column;gap:18px;position:sticky;top:0;height:100vh;overflow-y:auto;overscroll-behavior:contain}
 .side .logo{background:#fff;border-radius:12px;padding:10px 12px;border:1px solid var(--line)}
@@ -26,7 +26,7 @@
 
 .movil-salir{display:none!important}
 
-/* inicio */
+/* pantallaprincipal */
 .today{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center;background:linear-gradient(120deg,var(--surface) 55%,var(--surface-2));border-left:6px solid var(--warn)}
 .today.done{border-left-color:var(--ok)}
 .today.libre{border-left-color:var(--line)}
@@ -41,7 +41,7 @@
 .day.vacio{background:transparent}
 .legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
 
-/* registrar */
+/* pantallaregistrar */
 .steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .step{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:12px;background:var(--surface-2);color:var(--muted);font-weight:700;font-size:14px;border:0;text-align:left}
 .step b{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--surface);flex:none;font-size:13px}
@@ -65,7 +65,7 @@
 .exito{text-align:center;display:grid;gap:12px;justify-items:center;padding:30px 18px}
 .exito .ico{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:var(--ok-bg);color:var(--ok);font-size:30px}
 
-/* mis reportes */
+/* pantallamisreportes */
 .det{grid-column:1/-1}
 .det table{font-size:13px}
 .filtros{display:flex;gap:10px;flex-wrap:wrap;align-items:end}
@@ -73,8 +73,7 @@
 
 @media (max-width:860px){
   .app{grid-template-columns:1fr}
-.side{background:var(--surface);border-right:1px solid var(--line);padding:20px 14px;display:flex;flex-direction:column;gap:18px;position:sticky;top:0;height:100vh;overflow-y:auto;overscroll-behavior:contain}
-  .side .logo,.side .who,.navlabel,.sidefoot{display:none}
+  .side{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;z-index:15;overflow:visible;flex-direction:row;border-right:0;border-top:1px solid var(--line);padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));gap:0}  .side .logo,.side .who,.navlabel,.sidefoot{display:none}
   .nav{display:flex;width:100%;overflow-x:auto;gap:2px}
   .nav a{flex:1 0 auto;flex-direction:column;gap:3px;font-size:11px;padding:7px 8px;min-width:66px;align-items:center}
   .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
