@@ -74,6 +74,7 @@
 @media (max-width:860px){
   .app{grid-template-columns:1fr}
   .side{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;z-index:15;overflow:visible;flex-direction:row;border-right:0;border-top:1px solid var(--line);padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));gap:0}  .side .logo,.side .who,.navlabel,.sidefoot{display:none}
+  .side .logo,.side .who,.navlabel,.sidefoot{display:none}
   .nav{display:flex;width:100%;overflow-x:auto;gap:2px}
   .nav a{flex:1 0 auto;flex-direction:column;gap:3px;font-size:11px;padding:7px 8px;min-width:66px;align-items:center}
   .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
