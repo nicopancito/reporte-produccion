@@ -2,7 +2,7 @@
 import { $, esc } from "../util/dom.js";
 import { hoyLima, finMes, nombreMes } from "../logica/fechas.js";
 import { misReportes, mesesCerrados } from "../datos/reportes.js";
-import { tarjetaReporte, activarDetalles } from "./tarjeta-reporte.js";s
+import { tarjetaReporte, activarDetalles } from "./tarjeta-reporte.js";
 import { HORAS_CORRECCION } from "../config.js";
 
 let perfil, mes;
