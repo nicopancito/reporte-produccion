@@ -1,14 +1,15 @@
-// revisar reportes del supervisor mientras que el administrador solo mira
+// Revisar reportes: el supervisor marca Revisado solo admin
 import { $, esc, avisar, mensajeError } from "../util/dom.js";
 import { hoyLima, finMes, nombreMes } from "../logica/fechas.js";
 import { reportesDeTodos, perfilesQueReportan, revisarReporte, cierre } from "../datos/gestion.js";
 import { cargarCatalogos } from "../datos/catalogos.js";
 import { tarjetaReporte, activarDetalles, cap } from "./tarjeta-reporte.js";
 import { nombreCorto } from "./panel.js";
-
+ 
 let perfil, filtro, reportes = [], cerrado = false;
-const POR_PAGINA = 20; //para que las tarjetas de por revisar no se carguen de porraso y sea una por una
+const POR_PAGINA = 20;
 let mostrar = POR_PAGINA;
+ 
 export async function vistaRevisar(p, params) {
   perfil = p;
   const supervisor = p.rol === "supervisor";
@@ -31,7 +32,7 @@ export async function vistaRevisar(p, params) {
     <div id="resumen"></div>
     <div id="lista" class="list"><div class="cargando-vista">Cargando…</div></div>`;
 }
-
+ 
 export function montarRevisar() {
   $("#filtros").addEventListener("change", () => {
     const q = new URLSearchParams({ mes: $("#fMes").value || filtro.mes, tecnico: $("#fTec").value, estado: $("#fEstado").value, proceso: $("#fProceso").value });
@@ -43,7 +44,7 @@ export function montarRevisar() {
   $("#resumen").addEventListener("click", (e) => { if (e.target.closest("#todosRevisados")) marcarTodos(); });
   cargar();
 }
-
+ 
 async function cargar() {
   const desde = filtro.mes + "-01";
   const [datos, c] = await Promise.all([
@@ -52,19 +53,19 @@ async function cargar() {
   ]);
   reportes = filtro.proceso ? datos.filter((r) => String(r.procedimiento.proceso.id) === filtro.proceso) : datos;
   cerrado = !!c;
-  mostrar = POR_PAGINA; // reiniciar la cantidad de reportes a mostrar cada vez que se carga
+  mostrar = POR_PAGINA;
   pintar();
 }
-
+ 
 const puedeActuar = () => perfil.rol === "supervisor" && !cerrado;
-
+ 
 function acciones(r) {
   if (!puedeActuar()) return "";
   return (r.estado !== "revisado" ? `<button type="button" class="btn sm primary" data-revisado="${r.id}">Revisado</button>` : "")
     + `<button type="button" class="btn sm ghost" data-observar="${r.id}">${r.estado === "observado" ? "Editar observación" : "Observar"}</button>`
     + `<a class="btn sm ghost" href="#corregir/${r.id}">Corregir</a>`;
 }
-
+ 
 function pintar() {
   const lista = $("#lista");
   if (!lista) return;
@@ -72,17 +73,18 @@ function pintar() {
   $("#resumen").innerHTML = (cerrado ? `<div class="aviso">El mes de ${esc(nombreMes(filtro.mes + "-01"))} está cerrado: no se puede revisar ni corregir.</div>` : "")
     + `<div class="wfoot" style="align-items:center"><span class="muted small">${reportes.length} ${reportes.length === 1 ? "reporte" : "reportes"}${pendientes ? ` · ${pendientes} sin revisar` : ""}</span>
       ${puedeActuar() && pendientes ? `<button type="button" class="btn sm ghost" id="todosRevisados">Marcar los ${pendientes} sin revisar como revisados</button>` : ""}</div>`;
-    lista.innerHTML = reportes.length
-    ? reportes.map((r) => tarjetaReporte(r, { tecnico: true, acciones: acciones(r) })).join("")
+  // Se dibujan de 20 en 20 para que la página no se ponga lenta a fin de mes
+  const quedan = reportes.length - mostrar;
+  lista.innerHTML = reportes.length
+    ? reportes.slice(0, mostrar).map((r) => tarjetaReporte(r, { tecnico: true, acciones: acciones(r) })).join("")
+      + (quedan > 0 ? `<button type="button" class="btn ghost" data-ver-mas style="justify-self:center">Ver ${Math.min(quedan, POR_PAGINA)} más (quedan ${quedan})</button>` : "")
     : `<div class="card vacio">No hay reportes con estos filtros.</div>`;
 }
-
+ 
 async function alClic(e) {
   const b = e.target.closest("button");
   if (!b) return;
-  if(b.dataset.verMas !== undefined) {
-    mostrar += POR_PAGINA; return pintar();
-  }
+  if (b.dataset.verMas !== undefined) { mostrar += POR_PAGINA; return pintar(); }
   if (b.dataset.revisado) return cambiar(b, Number(b.dataset.revisado), "revisado");
   if (b.dataset.observar) {
     const item = b.closest(".item");
@@ -102,7 +104,7 @@ async function alClic(e) {
     return cambiar(b, Number(b.dataset.guardarObs), "observado", texto);
   }
 }
-
+ 
 async function cambiar(boton, id, estado, observacion = null) {
   boton.classList.add("cargando");
   try {
@@ -119,20 +121,30 @@ async function cambiar(boton, id, estado, observacion = null) {
     avisar(mensajeError(err), "bad");
   }
 }
-
+ 
+let marcando = false;
 async function marcarTodos() {
+  if (marcando) return;
   const ids = reportes.filter((r) => r.estado === "pendiente").map((r) => r.id);
-  if (!confirm(`¿Marcar ${ids.length} reportes como revisados?`)) return;
+  if (!ids.length || !confirm(`¿Marcar ${ids.length} reportes como revisados?`)) return;
+  marcando = true;
   const btn = $("#todosRevisados");
+  btn.disabled = true;
   btn.classList.add("cargando");
-  let errores = 0;
-  for (const id of ids) {
-    try {
-      await revisarReporte(id, "revisado");
-      reportes.find((x) => x.id === id).estado = "revisado";
-    } catch { errores++; }
+  let hechos = 0, errores = 0;
+  // De 10 en 10 para que sea rápido sin saturar la base
+  for (let i = 0; i < ids.length; i += 10) {
+    await Promise.all(ids.slice(i, i + 10).map(async (id) => {
+      try {
+        await revisarReporte(id, "revisado");
+        reportes.find((x) => x.id === id).estado = "revisado";
+      } catch { errores++; }
+      btn.textContent = `Marcando ${++hechos} de ${ids.length}…`;
+    }));
   }
+  marcando = false;
   if (filtro.estado === "pendiente") reportes = reportes.filter((r) => r.estado === "pendiente");
   pintar();
   avisar(errores ? `${ids.length - errores} revisados, ${errores} con error.` : `${ids.length} reportes marcados como revisados.`, errores ? "bad" : "");
 }
+ 

@@ -1,4 +1,4 @@
-// Ayudas de pantalla: escapar texto, avisos, íconos.
+//escapar texto, avisos, íconos.
 export const $ = (sel, raiz = document) => raiz.querySelector(sel);
 export const $$ = (sel, raiz = document) => [...raiz.querySelectorAll(sel)];
 

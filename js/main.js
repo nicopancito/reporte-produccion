@@ -8,11 +8,12 @@ import { vistaMisReportes, montarMisReportes } from "./vistas/mis-reportes.js";
 import { vistaPanel, montarPanel } from "./vistas/panel.js";
 import { vistaRevisar, montarRevisar } from "./vistas/revisar.js";
 import { vistaCumplimiento, montarCumplimiento } from "./vistas/cumplimiento.js";
+import { vistaInforme, montarInforme } from "./vistas/informe.js";
 import { vistaProximamente } from "./vistas/proximamente.js";
 import { MINUTOS_INACTIVIDAD } from "./config.js";
-
+ 
 const ROLES = { tecnico: "Técnico", supervisor: "Supervisor", administrador: "Administrador", programador: "Programador" };
-
+ 
 // Menú por rol: [ruta, texto, ícono, grupo]
 function menu(p) {
   const propio = p.reporta_produccion ? [["inicio", "Inicio", "inicio", "Mi trabajo"], ["registrar", "Registrar", "registrar", "Mi trabajo"], ["mis-reportes", "Mis reportes", "reportes", "Mi trabajo"]] : [["inicio", "Inicio", "inicio", "Mi trabajo"]];
@@ -24,11 +25,11 @@ function menu(p) {
   }[p.rol].map((x) => [...x, "Gestión"]);
   return [...propio, ...gestion];
 }
-
-const PROXIMAS = { informe: ["Informe mensual", 4], tecnicos: ["Técnicos", 5], catalogos: ["Catálogos", 5] };
-
+ 
+const PROXIMAS = { tecnicos: ["Técnicos", 5], catalogos: ["Catálogos", 5] };
+ 
 let perfil = null, usuario = null;
-
+ 
 function armarApp() {
   const items = menu(perfil);
   let grupo = "";
@@ -51,7 +52,7 @@ function armarApp() {
   </div>`;
   $("#btnSalir").addEventListener("click", cerrarSesion);
 }
-
+ 
 async function navegar() {
   if (!perfil) return;
   const [rutaCompleta, query = ""] = location.hash.slice(1).split("?");
@@ -72,18 +73,19 @@ async function navegar() {
     else if (destino === "panel") { vista.innerHTML = await vistaPanel(perfil, params); montarPanel(); }
     else if (destino === "revisar") { vista.innerHTML = await vistaRevisar(perfil, params); montarRevisar(); }
     else if (destino === "cumplimiento") { vista.innerHTML = await vistaCumplimiento(perfil, params); montarCumplimiento(); }
+    else if (destino === "informe") { vista.innerHTML = await vistaInforme(perfil, params); montarInforme(); }
     else vista.innerHTML = vistaProximamente(...PROXIMAS[destino]);
   } catch (err) {
     vista.innerHTML = `<div class="card aviso bad">No se pudo cargar: ${esc(mensajeError(err))}</div>`;
   }
   window.scrollTo({ top: 0 });
 }
-
+ 
 async function cerrarSesion() {
   await salir();
   location.hash = "";
 }
-
+ 
 // Cierre de sesión por inactividad
 let reloj;
 function reiniciarReloj() {
@@ -91,7 +93,7 @@ function reiniciarReloj() {
   if (perfil) reloj = setTimeout(async () => { await salir(); avisar("Se cerró tu sesión por inactividad."); }, MINUTOS_INACTIVIDAD * 60 * 1000);
 }
 ["click", "keydown", "touchstart"].forEach((ev) => document.addEventListener(ev, reiniciarReloj, { passive: true }));
-
+ 
 let ultimoUid, recuperando = false;
 async function alSesion(sesion) {
   if (!sesion) {
@@ -114,9 +116,9 @@ async function alSesion(sesion) {
   reiniciarReloj();
   navegar();
 }
-
+ 
 alCambiarSesion((evento, sesion) => {
-  if (evento === "PASSWORD_RECOVERY") {
+  if (evento === "PASSWORD_RECOVERY") { 
     recuperando = true;
     return mostrarAcceso({ modo: "nueva", alTerminar: () => { recuperando = false; ultimoUid = undefined; alSesion(sesion); } });
   }
@@ -126,3 +128,4 @@ alCambiarSesion((evento, sesion) => {
   setTimeout(() => alSesion(sesion), 0);
 });
 window.addEventListener("hashchange", navegar);
+ 
